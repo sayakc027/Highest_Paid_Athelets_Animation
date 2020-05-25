@@ -1,0 +1,165 @@
+---
+title: <center> <b> Forbes Highest Paid Athletes from 1990 to 2019 </b> </center>
+subtitle: <center> <b>  </b> </center>
+author: <center> Sayak Chakraborty </center>
+output:
+  html_document: 
+    code_folding: show
+always_allow_html: yes
+---
+
+<style>
+body {
+        text-align: justify;
+        font-family: "Bookman", Bookman;
+        font-size: 14pt;
+     }
+</style>
+
+<style>
+
+h1 {
+  color: #0002C0;
+  font-family: Bookman;
+  font-weight:bold;
+}
+
+h2 {
+  color: #0002C0;
+  font-family: Bookman;
+font-weight:bold;
+}
+
+h3 {
+  color: #0002C0;
+  font-family: Bookman;
+font-weight:bold;
+}
+
+h4 {
+  color: #0002C0;
+  font-family: Bookman;
+font-weight:bold;
+}
+
+a, a:hover {
+    color: #C70039 ;
+}
+
+</style>
+
+Data Source : [**Kaggle**](https://www.kaggle.com/parulpandey/forbes-highest-paid-athletes-19902019)
+
+<center> ![](Images/Richest-Athletes-in-the-World.jpg) </center>
+
+<h3> Packages Used </h3>
+
+We begin by loading the packages that will be required throughout the course of our analysis.
+
+```{r Loading the required packages, results='hide', echo=TRUE, message=FALSE, warning=FALSE, fig.align='center'}
+library (tidyverse) 
+library (ggfortify)
+library (qdapTools)
+library (caret)
+library (tidyr)
+library (corrplot)
+library (ggpubr)
+library (ggplot2)
+library (PerformanceAnalytics)
+library (factoextra)
+library (fpc)
+library (gganimate)
+library (gifski)
+library (av)
+library (magick)
+library (DT)
+```
+
+</hr>
+
+<h3> Reading the Data </h3>
+```{r read the data, results='hide', echo=TRUE, message=FALSE, warning=FALSE, fig.align='center'}
+data <-  read.csv("forbes-highest-paid-athletes-1990-2019/Forbes Richest Atheletes (Forbes Richest Athletes 1990-2019).csv")
+
+
+attach(data)
+set.seed(123456)
+```
+
+
+</br>
+
+</hr>
+
+<h3> Displaying the Top 10 Values of the Data </h3>
+
+```{r Display top 10 data, results='hide', echo=TRUE, message=FALSE, warning=FALSE, fig.align='center'}
+head(data, 10)
+```
+
+</br>
+
+<h3> Filtering the Top 10 Athletes for every year </h3>
+
+```{r top 10 rank, results='show', echo=TRUE, message=FALSE, warning=FALSE, fig.align='center'}
+#Since data is large, we filter top 10 players based on their rank vs the Year
+
+rank <- data %>%
+        group_by(Year) %>%
+        mutate(Earnings.Label = paste0(" ", round(earnings....million.)," Million")) %>% 
+        filter(Current.Rank <= 10) %>%
+        ungroup()
+
+datatable(head(rank, 20), class = 'cell-border stripe')
+```
+
+< / hr>
+
+<h2> Animation 1: Racing Bar Chart of Top 10 Athletes vs Year </h2>
+
+```{r Animated Graph, echo=TRUE, message=FALSE, warning=FALSE, fig.align='center'}
+graph <-
+  ggplot(rank,
+         aes(Current.Rank, group = Name, fill = Name, color = Name)) +
+  geom_tile(
+    aes( y = earnings....million., height = earnings....million., width = 0.7), alpha = 0.8, color = NA, size = 4 ) +
+  geom_text(
+    aes(y = 0, label = paste(Name, " ")), vjust = 0.2, hjust = 1, size = 6 ) +
+  geom_text(aes(y = earnings....million., label = Earnings.Label, hjust = 0), color = "#000000") +
+  coord_flip(clip = 'off', expand = F) +
+  scale_x_reverse() +
+  guides(color = F) +
+  labs(
+    title = "Forbes Highest Paid Athletes from 1990 to 2019",
+    x = NULL,
+    y = NULL,
+    caption = "Data Source : Kaggle (https://www.kaggle.com/parulpandey/forbes-highest-paid-athletes-19902019)"
+  ) +
+  theme_minimal () +
+  theme( plot.title = element_text( hjust = 0.5, size = 28, colour = "blue" ),
+    plot.caption = element_text(size = 10, colour = "#000000"),
+    # Remove grid lines and axes ticks
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.y  = element_blank(),
+    axis.text.x = element_blank(),
+    axis.title.x = element_blank(),
+    plot.margin = margin(1, 1, 1, 4, "cm")
+  ) +
+  # Turn off legend
+  theme(legend.position = "none") + 
+  #Set transition
+  transition_states(Year, transition_length = 4, state_length = 1) +
+  ease_aes('cubic-in-out')
+
+
+animate(graph, fps = 20, duration = 20,  width = 800, height = 600)
+```
+
+```{r GIF save 1, echo=TRUE, message=FALSE, warning=FALSE, fig.align='center'}
+anim_save("earnings_graph.gif", graph)
+```
+
+
+<h3> To Be Continued ... </h3>
